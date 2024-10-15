@@ -2,6 +2,7 @@ import machine
 import network
 import time
 import  neopixel
+import socket
 
 np = neopixel.NeoPixel(machine.Pin(0), 16)
 
@@ -41,4 +42,12 @@ while tryconnect:
 	if connect:
 		tryconnect = do_connect(sta_if, connect)
 
-print("reached end of programm")
+addr_info = socket.getaddrinfo("192.168.1.11", 2323)
+s = socket.socket()
+s.connect(addr_info[0][-1])
+
+while True:
+    data = s.recv(500)
+    print(str(data, 'utf8'), end='')
+
+

@@ -1,3 +1,4 @@
+color("yellow")
 translate([0,0,20])
 difference()
 {
@@ -13,16 +14,30 @@ cylinder(5,5,5);
 cylinder(100,2,2);
 }
 
-
-translate([0,0,50])
+color("red")
+union()
+{
+translate([0,0,60])
 difference()
 {
-        cylinder(10, 50, 50);
-cylinder(10, 45,45);
+    cylinder(5, 50, 50,$fn=65);
+    cylinder(5, 45,45);
 }
 
+
 difference()
 {
-    cylinder(50, 50, 50);
-    cylinder(50, 30,30);
+    cylinder(60, 50, 50,$fn=65);
+    cylinder(60, 30,30);
+}
+}
+
+color("blue")
+translate([0,0,-50])
+difference()
+{
+    cylinder(10, 30,30);
+    cylinder(100,2,2);
+    translate([28,0,0])
+    cylinder(100,2,2);
 }
