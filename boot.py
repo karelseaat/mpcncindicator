@@ -1,53 +1,77 @@
-import machine
-import network
 import time
-import  neopixel
+import network
 import socket
-
-np = neopixel.NeoPixel(machine.Pin(0), 16)
-
+import machine, neopixel
 
 
-def do_connect(sta_if, station):
-	
-    if not sta_if.isconnected():
-        print('connecting to network...')
-        sta_if.connect(station, 'VWMVXWXMQXVW36MN')
-        return True
-    else:
-        return False
+def display_state(state, np):
+    print(state)
+    state = int(state)
+    if state == 0:
+        np.fill((255,255,0))
+    elif state == 1:
+        np.fill((255,0,0))
+    elif state == 2:
+        np.fill((0,255,0))
+
+    np.write()
 
 
+np = neopixel.NeoPixel(machine.Pin(10), 16)
 
-def gottacheckssids(sta_if):
+np.fill((100,100,100))
+np.write()
+station = network.WLAN(network.STA_IF)
+station.active(True)
+station.disconnect()
+# Network settings
+wifi_ssid = "Odido-293C02"
+wifi_password = "VWMVXWXMQXVW36MN"
+print("Scanning for WiFi networks, please wait...")
+authmodes = ['Open', 'WEP', 'WPA-PSK' 'WPA2-PSK4', 'WPA/WPA2-PSK']
+for (ssid, bssid, channel, RSSI, authmode, hidden) in station.scan():
+  print("* {:s}".format(ssid))
+  print("   - Channel: {}".format(channel))
+  print("   - RSSI: {}".format(RSSI))
+  print("   - BSSID: {:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}".format(*bssid))
+  print()
 
-    validssid = b'Odido-293C02'
-    currentssids = sta_if.scan()
-    currentssids = [x[0] for x in currentssids]
-    if validssid in currentssids:
-        return validssid 
+# Continually try to connect to WiFi access point
+while not station.isconnected():
+    # Try to connect to WiFi access point
+    print("Connecting...")
+    station.connect(wifi_ssid, wifi_password)
+    time.sleep(10)
 
-    return None
+np.fill((100,0,100))
+np.write()
+print("done connecting to wifi!!")
+resolved = False
 
-sta_if = network.WLAN(network.STA_IF)
-sta_if.active(True)
-lasttime = 0
-tryconnect = True
+while not resolved:
+    try:
+        addr_info = socket.getaddrinfo("munchy.local", 23)
+        addr = addr_info[0][-1]
+        resolved = True
+    except:
+        print("not resolved")
 
-while tryconnect: 
-	if time.time() + 100 > lasttime:
-		lasttime = time.time()+100
-		connect = gottacheckssids(sta_if)
+np.fill((0,100,100))
+np.write()
 
-	if connect:
-		tryconnect = do_connect(sta_if, connect)
-
-addr_info = socket.getaddrinfo("192.168.1.11", 2323)
 s = socket.socket()
-s.connect(addr_info[0][-1])
+s.connect(addr)
+s.settimeout(10)
+
+print("addr:", addr)
 
 while True:
-    data = s.recv(500)
-    print(str(data, 'utf8'), end='')
-
+    time.sleep(5)
+    print("sending status question.")
+    s.send("$T\n")
+    try:
+        data = s.recv(500)
+        display_state(str(data, 'utf8')[6], np)
+    except Exception as e:
+        print("stuff whent wrong!", e)
 
