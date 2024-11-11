@@ -6,13 +6,15 @@ import machine, neopixel
 
 def display_state(state, np):
     print(state)
-    state = int(state)
-    if state == 0:
+    
+    if state == "Idle":
         np.fill((255,255,0))
-    elif state == 1:
+    elif state == "Alarm":
         np.fill((255,0,0))
-    elif state == 2:
+    elif state == "Run":
         np.fill((0,255,0))
+    else:
+        np.fill((0,0,0))
 
     np.write()
 
@@ -66,12 +68,12 @@ s.settimeout(10)
 print("addr:", addr)
 
 while True:
-    time.sleep(5)
+    time.sleep(2)
     print("sending status question.")
-    s.send("$T\n")
+    s.send("?\n")
     try:
         data = s.recv(500)
-        display_state(str(data, 'utf8')[6], np)
+        display_state(str(data, 'utf8').split("|")[0][1:], np)
     except Exception as e:
         print("stuff whent wrong!", e)
 
