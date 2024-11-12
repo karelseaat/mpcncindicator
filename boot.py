@@ -1,8 +1,8 @@
 import time
 import network
 import socket
-import machine, neopixel
-
+import machine
+from ws2813 import WS2813
 
 def display_state(state, np):
     print(state)
@@ -19,7 +19,7 @@ def display_state(state, np):
     np.write()
 
 
-np = neopixel.NeoPixel(machine.Pin(10), 16)
+np = WS2813(1, 16)
 
 np.fill((100,100,100))
 np.write()
